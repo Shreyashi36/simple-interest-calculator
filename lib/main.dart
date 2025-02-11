@@ -5,39 +5,53 @@ void main() {
   runApp(MaterialApp(
     title: "Exploring UI Widgets",
     home: Scaffold(
-      appBar: 
-      AppBar(
-        title: Text("Long List"),
-        backgroundColor: Color.fromARGB(255, 65, 126, 239),
-      ),
+      appBar: AppBar(title: Text("Long List"),),
       body: getListView(),
-      drawerEnableOpenDragGesture: false,
-    )
+      floatingActionButton: FloatingActionButton(
+        onPressed: (){
+          debugPrint("FAB Clicked");
+        },
+        child: Icon(Icons.add),
+        tooltip: "Add One More Item",
+        ),
+      )
     )
   );
 }
+void showSnackbar(BuildContext context, String item){
+  var snackBar = SnackBar(
+    content: Text("You just tapped $item"),
+    action: SnackBarAction(
+      label: "UNDO",
+      onPressed: (){
+        debugPrint("Performing dummy UNDO operation");
+      },
+    ),
+    
+  );
+
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+
+
+List<String> getListElements() {
+  var items = List<String>.generate(100, (counter) => "Item $counter");
+  return items;
+}
 
 Widget getListView(){
-  var listView = ListView(
-    children: [
-      ListTile(
-        leading: Icon(Icons.landscape),
-        title: Text("Landscape"),
-        subtitle: Text("Beautiful View!"),
-        trailing: Icon(Icons.wb_sunny),
-        onTap: () => {
-          debugPrint("Landscape tapped")
-        },
-      ),
-      ListTile(
-        leading: Icon(Icons.laptop_chromebook),
-        title: Text("Windows"),
-      ),
-      ListTile(
-        leading: Icon(Icons.phone),
-        title: Text("Phone"),
-      ),
-    ],
+  var items = getListElements();
+  var listView = ListView.builder(
+    itemCount: items.length,
+    itemBuilder:(context, indexx){
+      return ListTile(
+        title: Text(items[indexx]),
+        onTap: () {
+          showSnackbar(context, items[indexx]);
+        }
+      );
+    }
   );
   return listView;
 }
