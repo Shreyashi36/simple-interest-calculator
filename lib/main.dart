@@ -1,71 +1,211 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart ';
+import 'package:flutter/rendering.dart';
 
 void main(){
   runApp(
     MaterialApp(
-      title: "Stateful App Example",
-      home: FavCity(),
       debugShowCheckedModeBanner: false,
+      title: "Simple Interest Calculator",
+      home: SIForm(),
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        primaryColor: Colors.indigo,
+        // colorScheme: ColorScheme.fromSwatch().copyWith(
+        // secondary: Colors.indigoAccent,
+      ),
     )
   );
 }
-class FavCity extends StatefulWidget{
+
+class SIForm extends StatefulWidget{
+
   @override
   State<StatefulWidget> createState(){
-    return _FavCityState();
+    return _SIFormState();
   }
 }
 
-class _FavCityState extends State<FavCity>{
-  String nameCity = "";
-  var _currencies = ['Rupees', 'Dollars', 'Pounds', 'Others'];
-  var _currentItemSelected = 'Rupees';
+class _SIFormState extends State<SIForm>{
+
+  var _currencies = ['Rupees', 'Dollars', 'Pounds'];
+  final _minimumPadding = 5.0;
+  var _currentItemSelected = '';
+
+  @override
+  void initState(){
+    super.initState();
+    _currentItemSelected = _currencies[0];
+  }
+
+  TextEditingController principalController = TextEditingController();
+  TextEditingController roiController = TextEditingController();      
+  TextEditingController termController = TextEditingController();
+
+  var displayResult = '';
+  
+
   @override
   Widget build(BuildContext context) {
-    debugPrint("FavCity widget is created");
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Stateful App Example")
-      ),
-      body: Container(
-        child: Column(children: [
-          TextField(
-            onChanged: (String userInput){
-              setState(() {
-                nameCity = userInput;
-                debugPrint("setState is called, widget is re-rendered");
-              });
-            nameCity = userInput;
-            }, 
-          ),
-          DropdownButton(
-            items: _currencies.map((String dropDownStringItem){
-              return DropdownMenuItem<String>(
-                value: dropDownStringItem,
-                child: Text(dropDownStringItem),
-              );
-            }).toList(), 
-            onChanged: (String? newValueSelected){
-              //code to execute, when a menu item is selected
-              setState(() {
-                this._currentItemSelected = newValueSelected!;
-              });
-            },
-            value: _currentItemSelected,
-          ),
 
-         
+    TextStyle textStyle = Theme.of(context).textTheme.titleLarge!;
+
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      appBar: AppBar(
+        title: Text("Simple Interest Calculator"),
+        backgroundColor: Colors.blueAccent,
+      ),  
+      body: Container(
+        margin: EdgeInsets.all(_minimumPadding * 2),
+        child: Column(
+          children: [
+            getImageAsset(),
+
 
           Padding(
-            padding: const EdgeInsets.all(30.0),
-            child: Text(
-              "Your best city is $nameCity",
-              style: TextStyle(fontSize: 20.0),
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              keyboardType: TextInputType.number,
+              style: textStyle,
+              controller: principalController,
+              decoration: InputDecoration(
+                labelText: 'Principal',
+                hintText: 'Enter Principal e.g. 50000',
+                labelStyle: textStyle,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                )
+              ),
             ),
-          )
-        ]),
-      )
+          ),
+
+           Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: TextField(
+              keyboardType: TextInputType.number,
+              controller: roiController,
+              style: textStyle,
+              decoration: InputDecoration(
+                labelText: 'Rate of Interest',
+                hintText: 'Enter Rate of Interest e.g. 10',
+                labelStyle: textStyle,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                )
+              ),
+            ),
+           ),  
+
+           Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: Row(children: 
+             [
+              Expanded(child: TextField(
+                keyboardType: TextInputType.number,
+                controller: termController,
+                style: textStyle,
+                decoration: InputDecoration(
+                  labelText: 'Term',
+                  hintText: 'Enter Term e.g. 5',
+                  labelStyle: textStyle,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  )
+                ),
+              )),
+              Container(
+                width: _minimumPadding * 5,
+
+              ),
+              Expanded( child: DropdownButton<String>(
+                items: _currencies.map((String value){
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged: (String? newValueSelected){
+                  // Your code to execute, when a menu item is selected from dropdown
+                  setState(() {
+                    this._currentItemSelected = newValueSelected!;  
+                  });
+                },
+                value: _currentItemSelected,
+                )
+                )
+             
+             
+             
+             ],),
+           ), 
+          //Calculate and Reset Button          
+           Padding(
+             padding: const EdgeInsets.all(8.0),
+             child: Row(children: [
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColorDark,
+                  ),
+                  // ignore: deprecated_member_use
+                  child: Text('Calculate', textScaleFactor: 1.5,),
+                  onPressed: (){
+                    setState(() {
+                      this.displayResult = _calculateTotalReturns();
+                    });
+                  }
+                  )),
+              
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColorLight,
+                  ), 
+                  // ignore: deprecated_member_use
+                  child: Text('Reset', textScaleFactor: 1.5,),
+                  onPressed: (){
+                    _reset();
+                  }
+                  ))
+             
+             ],),
+           ), 
+           Padding(padding: EdgeInsets.all(_minimumPadding * 2),
+           child: Text(this.displayResult, style: textStyle,)
+
+           )
+          ],
+        ),
+      ),
     );
   }
-  //build method
+
+  Widget getImageAsset(){
+    AssetImage assetImage = AssetImage('assets/images/money.png');
+    Image image = Image(image: assetImage, width: 125.0, height: 125.0,);
+    return Container(child: image, margin: EdgeInsets.all(_minimumPadding * 10),);
+  }
+  String _calculateTotalReturns() {
+    double principal = double.parse(principalController.text);
+    double roi = double.parse(roiController.text);
+    double term = double.parse(termController.text);
+
+    double totalAmountPayable = principal + (principal * roi * term) / 100;
+
+    String result = 'After $term years, your investment will be worth $totalAmountPayable $_currentItemSelected';
+    return result;
+  }
+
+void _reset(){
+  principalController.text = '';
+  roiController.text = '';
+  termController.text = '';
+  displayResult = '';
+  _currentItemSelected = _currencies[0];
+  
+}
+
+
+
 }
