@@ -30,6 +30,7 @@ class _SIFormState extends State<SIForm>{
   var _currencies = ['Rupees', 'Dollars', 'Pounds'];
   final _minimumPadding = 5.0;
   var _currentItemSelected = '';
+  var _formKey = GlobalKey<FormState>();
 
   @override
   void initState(){
@@ -56,8 +57,11 @@ class _SIFormState extends State<SIForm>{
         title: Text("Simple Interest Calculator"),
         backgroundColor: Colors.blueAccent,
       ),  
-      body: Container(
-        margin: EdgeInsets.all(_minimumPadding * 2),
+///Form
+      body: Form(
+        key: _formKey,
+        child: Padding(
+          padding: EdgeInsets.all(_minimumPadding * 2),
         child: Column(
           children: [
             getImageAsset(),
@@ -65,14 +69,24 @@ class _SIFormState extends State<SIForm>{
 
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: TextField(
+            child: TextFormField(
               keyboardType: TextInputType.number,
               style: textStyle,
               controller: principalController,
+              validator: (String? value){
+                if(value!.isEmpty){
+                  return 'Please enter principal amount';
+                }
+              },
               decoration: InputDecoration(
                 labelText: 'Principal',
                 hintText: 'Enter Principal e.g. 50000',
                 labelStyle: textStyle,
+                //style of error, mane colour, bujhe ne
+                errorStyle: TextStyle(
+                  color: Colors.yellowAccent,
+                  fontSize: 15.0
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5.0),
                 )
@@ -82,14 +96,23 @@ class _SIFormState extends State<SIForm>{
 
            Padding(
              padding: const EdgeInsets.all(8.0),
-             child: TextField(
+             child: TextFormField(
               keyboardType: TextInputType.number,
               controller: roiController,
+              validator: (String? value){
+                if(value!.isEmpty){
+                  return 'Please enter rate of Interest';
+                }
+              },
               style: textStyle,
               decoration: InputDecoration(
                 labelText: 'Rate of Interest',
                 hintText: 'Enter Rate of Interest e.g. 10',
                 labelStyle: textStyle,
+                errorStyle: TextStyle(
+                  color: Colors.yellowAccent,
+                  fontSize: 15.0
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(5.0),
                 )
@@ -101,14 +124,24 @@ class _SIFormState extends State<SIForm>{
              padding: const EdgeInsets.all(8.0),
              child: Row(children: 
              [
-              Expanded(child: TextField(
+              Expanded(
+                child: TextFormField(
                 keyboardType: TextInputType.number,
                 controller: termController,
+                validator: (String? value){
+                if(value!.isEmpty){
+                  return 'Please enter rate of Interest';
+                  }
+                },
                 style: textStyle,
                 decoration: InputDecoration(
                   labelText: 'Term',
                   hintText: 'Enter Term e.g. 5',
                   labelStyle: textStyle,
+                  errorStyle: TextStyle(
+                  color: Colors.yellowAccent,
+                  fontSize: 15.0
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5.0),
                   )
@@ -152,7 +185,9 @@ class _SIFormState extends State<SIForm>{
                   child: Text('Calculate', textScaleFactor: 1.5,),
                   onPressed: (){
                     setState(() {
-                      this.displayResult = _calculateTotalReturns();
+                      if (_formKey.currentState!.validate()){
+                        this.displayResult = _calculateTotalReturns();
+                      }
                     });
                   }
                   )),
@@ -177,6 +212,7 @@ class _SIFormState extends State<SIForm>{
            )
           ],
         ),
+      )
       ),
     );
   }
